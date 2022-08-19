@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using Ozon.Route256.Postgres.Api.Abstractions;
 using Ozon.Route256.Postgres.Api.Services;
 using Ozon.Route256.Postgres.Domain;
 using Ozon.Route256.Postgres.Persistence;
@@ -31,6 +32,7 @@ public sealed class Startup
                 typeof(SqlMigration).Assembly);
 
         services.AddScoped<IOrderRepository, OrderRepository>(_ => new(connectionString));
+        services.AddScoped<IChangeStateService, ChangeStateService>();
     }
 
     public static void Configure(IApplicationBuilder app, IWebHostEnvironment env) =>

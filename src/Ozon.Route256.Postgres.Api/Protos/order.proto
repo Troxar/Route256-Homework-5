@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 package ozon.route256.postgres;
 option csharp_namespace = "Ozon.Route256.Postgres.Grpc";
 
@@ -7,7 +8,7 @@ import "money.proto";
 service OrderService {
   rpc Get (GetRequest) returns (GetResponse);
   rpc GetStream (GetRequest) returns (stream GetStreamResponse);
-  rpc ChangeState (ChangeStateRequest) returns (ChangeStateResponse);
+  rpc ChangeState (ChangeStateRequest) returns (google.protobuf.Empty);
 }
 
 message GetRequest {
@@ -25,10 +26,6 @@ message GetStreamResponse {
 message ChangeStateRequest {
   int64 order_id = 1;
   OrderState state = 2;
-}
-
-message ChangeStateResponse {
-  bool orderReceivedFromCache = 1;
 }
 
 message Order {
