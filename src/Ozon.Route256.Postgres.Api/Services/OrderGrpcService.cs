@@ -35,4 +35,15 @@ public sealed class OrderGrpcService : OrderService.OrderServiceBase
         await foreach (var order in result)
             await responseStream.WriteAsync(new() { Order = order.Map() });
     }
+
+    public override async Task<ChangeStateResponse> ChangeState(ChangeStateRequest request, ServerCallContext context)
+    {
+        await _orderRepository
+            .ChangeState(request.OrderId, request.State.ToDomain(), context.CancellationToken);
+
+        return new ()
+        {
+            OrderReceivedFromCache = false
+        };
+    }
 }

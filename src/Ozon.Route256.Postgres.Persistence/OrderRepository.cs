@@ -145,5 +145,27 @@ FROM unnest(
         await tx.CommitAsync(cancellationToken);
     }
 
+    public async ValueTask ChangeState(long orderId, OrderState state, CancellationToken cancellationToken)
+    {
+        const string query = @"
+UPDATE orders
+SET order_state = :state
+WHERE order_id = :order_id;
+";
+
+        await using var connection = new NpgsqlConnection(_connectionString);
+        await using var command = new NpgsqlCommand(query, connection)
+        {
+            Parameters =
+            {
+                { "order_id", orderId },
+                { "state", state },
+            }
+        };
+
+        await connection.OpenAsync(cancellationToken);
+        await command.ExecuteScalarAsync(cancellationToken);
+    }
+
     private readonly record struct OrderRow(long OrderId, long ClientId, OrderState State, decimal Amount, DateTimeOffset Date);
 }
