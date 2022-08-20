@@ -15,8 +15,13 @@ public class CacheUpdateHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
+        await Task.Run(() => DoWork(ct), ct);
+    }
+
+    private void DoWork(CancellationToken ct)
+    {
         using var scope = _services.CreateScope();
         var scopedProcessingService = scope.ServiceProvider.GetRequiredService<ICacheUpdateProcessingService>();
-        await scopedProcessingService.DoWork(ct);
+        scopedProcessingService.DoWork(ct);
     }
 }

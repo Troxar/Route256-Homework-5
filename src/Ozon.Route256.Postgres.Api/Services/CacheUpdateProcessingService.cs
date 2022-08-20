@@ -1,19 +1,36 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
+using Confluent.Kafka;
 using Ozon.Route256.Postgres.Api.Abstractions;
+using Ozon.Route256.Postgres.Api.Utils;
+using Ozon.Route256.Postgres.Grpc;
 
 namespace Ozon.Route256.Postgres.Api.Services;
 
 public class CacheUpdateProcessingService : ICacheUpdateProcessingService
 {
-    public async Task DoWork(CancellationToken ct)
+    public void DoWork(CancellationToken ct)
     {
-        while (!ct.IsCancellationRequested)
+        var consumer = new ConsumerBuilder<long, OrderEvent>(
+                new ConsumerConfig
+                {
+                    BootstrapServers = Constants.Broker,
+                    GroupId = "cache-update-service",
+                    AutoOffsetReset = AutoOffsetReset.Earliest,
+                    EnableAutoCommit = true,
+                    EnableAutoOffsetStore = false
+                })
+            .SetValueDeserializer(new ProtobufSerializer<OrderEvent>())
+            .Build();
+        consumer.Subscribe(Constants.Topic);
+
+        while (consumer.Consume(ct) is { } result)
         {
-            Debug.WriteLine(DateTime.Now);
-            await Task.Delay(1000, ct);
+            ct.ThrowIfCancellationRequested();
+            Debug.WriteLine(result.Message.Value);
+            consumer.StoreOffset(result);
         }
+
+        consumer.Close();
     }
 }

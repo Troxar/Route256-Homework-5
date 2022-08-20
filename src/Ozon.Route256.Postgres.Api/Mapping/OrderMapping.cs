@@ -52,7 +52,7 @@ internal static class OrderMapping
             _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
         };
 
-    public static OrderEvent Map(this Entities.OrderEvent orderEvent) =>
+    public static OrderEvent Map(this Domain.OrderEvent orderEvent) =>
         new ()
         {
             OrderId = orderEvent.orderId,

@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Ozon.Route256.Postgres.Api.Entities;
+using Ozon.Route256.Postgres.Domain;
 
 namespace Ozon.Route256.Postgres.Api.Abstractions;
 

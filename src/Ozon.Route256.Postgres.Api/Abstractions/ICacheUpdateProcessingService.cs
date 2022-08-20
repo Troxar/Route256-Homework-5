@@ -5,5 +5,5 @@ namespace Ozon.Route256.Postgres.Api.Abstractions;
 
 public interface ICacheUpdateProcessingService
 {
-    Task DoWork(CancellationToken ct);
+    void DoWork(CancellationToken ct);
 }
