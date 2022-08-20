@@ -24,7 +24,10 @@ public sealed class Startup
         var connectionString = _configuration["ConnectionString"];
 
         services
-            .AddGrpc()
+            .AddGrpc(options =>
+            {
+                options.EnableDetailedErrors = true;
+            })
             .Services
             .AddGrpcReflection()
             .AddFluentMigrator(

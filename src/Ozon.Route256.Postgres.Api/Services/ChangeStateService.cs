@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Ozon.Route256.Postgres.Api.Abstractions;
@@ -12,14 +13,17 @@ internal class ChangeStateService : IChangeStateService
 
     public ChangeStateService(IOrderRepository orderRepository) => _orderRepository = orderRepository;
 
-    public async ValueTask ChangeState(long orderId, OrderState state, CancellationToken cancellationToken)
+    public async ValueTask ChangeState(long orderId, OrderState state, CancellationToken ct)
     {
         if (orderId <= 0)
             throw new ArgumentException("Invalid OrderId", nameof(orderId));
 
-        if (!Enum.IsDefined(state))
-            throw new ArgumentException("State is not defined", nameof(state));
+        if (await _orderRepository.Get(new[] { orderId }, ct)
+                .FirstOrDefaultAsync(ct) is null)
+        {
+            throw new ArgumentException("OrderId not found", nameof(orderId));
+        }
 
-        await _orderRepository.ChangeState(orderId, state, cancellationToken);
+        await _orderRepository.ChangeState(orderId, state, ct);
     }
 }
