@@ -36,6 +36,7 @@ public sealed class Startup
 
         services.AddScoped<IOrderRepository, OrderRepository>(_ => new(connectionString));
         services.AddScoped<IChangeStateService, ChangeStateService>();
+        services.AddTransient<IOrderEventService, KafkaService>();
     }
 
     public static void Configure(IApplicationBuilder app, IWebHostEnvironment env) =>
