@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using Ozon.Route256.Postgres.Api.Abstractions;
 using Ozon.Route256.Postgres.Api.Services;
+using Ozon.Route256.Postgres.Api.Utils;
 using Ozon.Route256.Postgres.Domain;
 using Ozon.Route256.Postgres.Persistence;
 using Ozon.Route256.Postgres.Persistence.Common;
@@ -33,7 +34,12 @@ public sealed class Startup
             .AddGrpcReflection()
             .AddFluentMigrator(
                 connectionString,
-                typeof(SqlMigration).Assembly);
+                typeof(SqlMigration).Assembly)
+            .AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = Constants.RedisConfig;
+                options.InstanceName = "StackExchangeRedis";
+            });
 
         services.AddScoped<IOrderRepository, OrderRepository>(provider => new(connectionString,
             provider.GetRequiredService<ILogger<OrderRepository>>()));
@@ -41,7 +47,9 @@ public sealed class Startup
         services.AddTransient<IOrderEventService, KafkaService>();
         services.AddHostedService<CacheUpdateHostedService>();
         services.AddScoped<ICacheUpdateProcessingService, CacheUpdateProcessingService>();
-        services.AddScoped<IOrderEventCacheService, RedisService>();
+
+        //services.AddScoped<IOrderEventCacheService, RedisService>();
+        services.AddScoped<IOrderEventCacheService, DistributedCacheService>();
     }
 
     public static void Configure(IApplicationBuilder app, IWebHostEnvironment env) =>
