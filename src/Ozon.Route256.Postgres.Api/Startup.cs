@@ -39,7 +39,7 @@ public sealed class Startup
         services.AddTransient<IOrderEventService, KafkaService>();
         services.AddHostedService<CacheUpdateHostedService>();
         services.AddScoped<ICacheUpdateProcessingService, CacheUpdateProcessingService>();
-
+        services.AddScoped<IOrderEventCacheService, RedisService>();
     }
 
     public static void Configure(IApplicationBuilder app, IWebHostEnvironment env) =>

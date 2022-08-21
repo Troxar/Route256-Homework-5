@@ -59,4 +59,12 @@ internal static class OrderMapping
             State = orderEvent.state.ToGrpc(),
             Timestamp = Timestamp.FromDateTimeOffset(orderEvent.timestamp),
         };
+
+    public static Domain.OrderEvent Map(this OrderEvent orderEvent) =>
+        new
+        (
+            orderEvent.OrderId,
+            orderEvent.State.ToDomain(),
+            orderEvent.Timestamp.ToDateTimeOffset()
+        );
 }
