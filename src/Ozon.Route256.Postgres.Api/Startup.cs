@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using Ozon.Route256.Postgres.Api.Abstractions;
 using Ozon.Route256.Postgres.Api.Services;
@@ -34,7 +35,8 @@ public sealed class Startup
                 connectionString,
                 typeof(SqlMigration).Assembly);
 
-        services.AddScoped<IOrderRepository, OrderRepository>(_ => new(connectionString));
+        services.AddScoped<IOrderRepository, OrderRepository>(provider => new(connectionString,
+            provider.GetRequiredService<ILogger<OrderRepository>>()));
         services.AddScoped<IChangeStateService, ChangeStateService>();
         services.AddTransient<IOrderEventService, KafkaService>();
         services.AddHostedService<CacheUpdateHostedService>();

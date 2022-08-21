@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using System.Threading;
+﻿using System.Threading;
 using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using Ozon.Route256.Postgres.Api.Abstractions;
 using Ozon.Route256.Postgres.Api.Mapping;
 using Ozon.Route256.Postgres.Api.Utils;
@@ -11,10 +11,12 @@ namespace Ozon.Route256.Postgres.Api.Services;
 public class CacheUpdateProcessingService : ICacheUpdateProcessingService
 {
     private readonly IOrderEventCacheService _cacheService;
+    private readonly ILogger<CacheUpdateProcessingService> _logger;
 
-    public CacheUpdateProcessingService(IOrderEventCacheService cacheService)
+    public CacheUpdateProcessingService(IOrderEventCacheService cacheService, ILogger<CacheUpdateProcessingService> logger)
     {
         _cacheService = cacheService;
+        _logger = logger;
     }
 
     public void DoWork(CancellationToken ct)
@@ -36,7 +38,7 @@ public class CacheUpdateProcessingService : ICacheUpdateProcessingService
         {
             ct.ThrowIfCancellationRequested();
 
-            Debug.WriteLine($"Consumer got message: {result.Message.Value}");
+            _logger.LogInformation("Got message from Kafka: {value}", result.Message.Value);
 
             var value = _cacheService.Get(result.Message.Value.OrderId);
             var orderEvent = result.Message.Value.Map();
@@ -44,11 +46,11 @@ public class CacheUpdateProcessingService : ICacheUpdateProcessingService
             if (value != orderEvent.state)
             {
                 _cacheService.Add(orderEvent);
-                Debug.WriteLine($"State has changed; the value has been updated in Redis");
+                _logger.LogInformation("State has changed; the value has been updated in Redis");
             }
             else
             {
-                Debug.WriteLine($"State has not changed; no need to update the value in Redis");
+                _logger.LogInformation("State has not changed; no need to update the value in Redis");
             }
 
             consumer.StoreOffset(result);

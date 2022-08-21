@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using Ozon.Route256.Postgres.Domain;
 using Ozon.Route256.Postgres.Domain.Common;
@@ -14,8 +15,13 @@ namespace Ozon.Route256.Postgres.Persistence;
 public sealed class OrderRepository : IOrderRepository
 {
     private readonly string _connectionString;
+    private readonly ILogger<OrderRepository> _logger;
 
-    public OrderRepository(string connectionString) => _connectionString = connectionString;
+    public OrderRepository(string connectionString, ILogger<OrderRepository> logger)
+    {
+        _connectionString = connectionString;
+        _logger = logger;
+    }
 
     public async IAsyncEnumerable<Order> Get(
         long[] orderIds,
@@ -165,6 +171,8 @@ WHERE order_id = :order_id;
 
         await connection.OpenAsync(cancellationToken);
         await command.ExecuteScalarAsync(cancellationToken);
+
+        _logger.LogInformation("Order state has been change: {value}", orderId);
     }
 
     private readonly record struct OrderRow(long OrderId, long ClientId, OrderState State, decimal Amount, DateTimeOffset Date);

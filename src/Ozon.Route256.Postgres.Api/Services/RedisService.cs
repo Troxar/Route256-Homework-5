@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Ozon.Route256.Postgres.Api.Abstractions;
 using Ozon.Route256.Postgres.Api.Utils;
 using Ozon.Route256.Postgres.Domain;
@@ -9,11 +9,13 @@ namespace Ozon.Route256.Postgres.Api.Services;
 
 public class RedisService : IOrderEventCacheService, IDisposable
 {
+    private readonly ILogger<RedisService> _logger;
     private readonly ConnectionMultiplexer _connection;
     private readonly IDatabase _db;
 
-    public RedisService()
+    public RedisService(ILogger<RedisService> logger)
     {
+        _logger = logger;
         _connection = ConnectionMultiplexer.Connect(Constants.RedisConfig);
         _db = _connection.GetDatabase();
     }
@@ -21,7 +23,7 @@ public class RedisService : IOrderEventCacheService, IDisposable
     public void Add(OrderEvent orderEvent)
     {
         _db.StringSet(orderEvent.orderId.ToString(), (int)orderEvent.state);
-        Debug.WriteLine($"Redis set the value: {orderEvent}");
+        _logger.LogInformation("The value has been set: {value}", orderEvent);
     }
 
     public OrderState? Get(long orderId)
