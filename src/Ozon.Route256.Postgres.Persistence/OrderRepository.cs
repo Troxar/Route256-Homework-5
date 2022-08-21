@@ -172,7 +172,7 @@ WHERE order_id = :order_id;
         await connection.OpenAsync(cancellationToken);
         await command.ExecuteScalarAsync(cancellationToken);
 
-        _logger.LogInformation("Order state has been change: {value}", orderId);
+        _logger.LogInformation("Order state has been changed: {value}", orderId);
     }
 
     private readonly record struct OrderRow(long OrderId, long ClientId, OrderState State, decimal Amount, DateTimeOffset Date);

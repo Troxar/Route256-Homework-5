@@ -26,7 +26,7 @@ public class CacheUpdateProcessingService : ICacheUpdateProcessingService
                 {
                     BootstrapServers = Constants.Broker,
                     GroupId = "cache-update-service",
-                    AutoOffsetReset = AutoOffsetReset.Earliest,
+                    AutoOffsetReset = AutoOffsetReset.Latest,
                     EnableAutoCommit = true,
                     EnableAutoOffsetStore = false
                 })
@@ -45,12 +45,15 @@ public class CacheUpdateProcessingService : ICacheUpdateProcessingService
 
             if (value != orderEvent.state)
             {
-                _cacheService.Add(orderEvent);
-                _logger.LogInformation("State has changed; the value has been updated in Redis");
+                _logger.LogInformation("Message contains new state for order id {orderId}; " +
+                                       "the cache should be updated", orderEvent.orderId);
+                _cacheService.Add(orderEvent.orderId, orderEvent.state);
+
             }
             else
             {
-                _logger.LogInformation("State has not changed; no need to update the value in Redis");
+                _logger.LogInformation("Message contains the same state for order id {orderId} as in the cache; " +
+                                       "no need to update the cache", orderEvent.orderId);
             }
 
             consumer.StoreOffset(result);

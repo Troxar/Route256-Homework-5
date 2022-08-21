@@ -20,10 +20,10 @@ public class RedisService : IOrderEventCacheService, IDisposable
         _db = _connection.GetDatabase();
     }
 
-    public void Add(OrderEvent orderEvent)
+    public void Add(long orderId, OrderState state)
     {
-        _db.StringSet(orderEvent.orderId.ToString(), (int)orderEvent.state);
-        _logger.LogInformation("The value has been set: {value}", orderEvent);
+        _db.StringSet(orderId.ToString(), (int)state);
+        _logger.LogInformation("State {state} has been set for the key {orderId}", state, orderId);
     }
 
     public OrderState? Get(long orderId)
