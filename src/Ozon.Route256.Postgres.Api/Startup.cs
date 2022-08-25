@@ -48,7 +48,7 @@ public sealed class Startup
         services.AddHostedService<CacheUpdateHostedService>();
         services.AddScoped<ICacheUpdateProcessingService, CacheUpdateProcessingService>();
 
-        //services.AddScoped<IOrderEventCacheService, RedisService>();
+        //todo: put in config - RedisService or DistributedCacheService;
         services.AddScoped<IOrderEventCacheService, DistributedCacheService>();
     }
 
