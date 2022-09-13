@@ -9,4 +9,6 @@ public interface IOrderRepository
     IAsyncEnumerable<Order> Get(long[] orderIds, CancellationToken cancellationToken);
 
     ValueTask Add(Order[] orders, CancellationToken cancellationToken);
+
+    ValueTask ChangeState(long orderId, OrderState state, CancellationToken cancellationToken);
 }

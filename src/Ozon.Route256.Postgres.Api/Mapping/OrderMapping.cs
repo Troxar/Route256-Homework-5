@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Google.Protobuf.WellKnownTypes;
 using Ozon.Route256.Postgres.Grpc;
 
 namespace Ozon.Route256.Postgres.Api.Mapping;
@@ -36,4 +37,34 @@ internal static class OrderMapping
             Domain.OrderState.Cancelled => OrderState.Cancelled,
             _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
         };
+
+    public static Domain.OrderState ToDomain(this OrderState state) =>
+        state switch {
+            OrderState.Unknown => Domain.OrderState.Unknown,
+            OrderState.Created => Domain.OrderState.Created,
+            OrderState.Paid => Domain.OrderState.Paid,
+            OrderState.Boxing =>Domain.OrderState.Boxing,
+            OrderState.WaitForPickup => Domain.OrderState.WaitForPickup,
+            OrderState.InDelivery => Domain.OrderState.InDelivery,
+            OrderState.WaitForClient => Domain.OrderState.WaitForClient,
+            OrderState.Completed => Domain.OrderState.Completed,
+            OrderState.Cancelled => Domain.OrderState.Cancelled,
+            _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+        };
+
+    public static OrderEvent Map(this Domain.OrderEvent orderEvent) =>
+        new ()
+        {
+            OrderId = orderEvent.orderId,
+            State = orderEvent.state.ToGrpc(),
+            Timestamp = Timestamp.FromDateTimeOffset(orderEvent.timestamp),
+        };
+
+    public static Domain.OrderEvent Map(this OrderEvent orderEvent) =>
+        new
+        (
+            orderEvent.OrderId,
+            orderEvent.State.ToDomain(),
+            orderEvent.Timestamp.ToDateTimeOffset()
+        );
 }
